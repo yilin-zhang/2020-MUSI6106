@@ -52,29 +52,37 @@ int main(int argc, char* argv[])
  
     //////////////////////////////////////////////////////////////////////////////
     // allocate memory
-    long long int iNumFrames = 44100 * 3;
-    ppfAudioData = (float**) malloc(sizeof(float*)*2);
-    *ppfAudioData = (float*) malloc(sizeof(float)*iNumFrames);
-    *(ppfAudioData+1) = (float*) malloc(sizeof(float)*iNumFrames);
+    const int iNumChannels = 2;
+    ppfAudioData = (float**) malloc(sizeof(float*) * iNumChannels);
+    *ppfAudioData = (float*) malloc(sizeof(float) * kBlockSize);
+    *(ppfAudioData+1) = (float*) malloc(sizeof(float) * kBlockSize);
  
     //////////////////////////////////////////////////////////////////////////////
     // get audio data and write it to the output text file (one column per channel)
-    float line[2];
-    (*phAudioFile).readData(ppfAudioData, iNumFrames);
-    for (int i=0; i<iNumFrames; ++i) {
-        // read 2 channels at frame i
-        for (int j=0; j<2; ++j) {
-            line[j] = ppfAudioData[j][i];
+    long long int iNumFrames = kBlockSize;
+    while(true) {
+        // read one block
+        (*phAudioFile).readData(ppfAudioData, iNumFrames);
+        for (int i=0; i<iNumFrames; ++i) {
+            // read frame i and write into file as a line
+            for (int j=0; j<iNumChannels; ++j) {
+                textFile << ppfAudioData[j][i];
+                if (j != iNumChannels-1)
+                    textFile << "\t";
+                else
+                    textFile << endl;
+            }
         }
-        // write a line into the file
-        textFile << line[0] << "\t" << line[1] << endl;
+        // break if this is the last block
+        if(iNumFrames < kBlockSize)
+            break;
     }
 
     //////////////////////////////////////////////////////////////////////////////
     // clean-up (close files and free memory)
     textFile.close();
-    free(*ppfAudioData);
-    free(*(ppfAudioData+1));
+    for (int i=0; i<iNumChannels; ++i)
+        free(*(ppfAudioData+i));
     free(ppfAudioData);
 
     // all done
