@@ -34,3 +34,6 @@
 /bld/.vs/MUSI6106/v16/*.suo
 bld
 /lib/debug/*.exp
+
+# Editor
+compile_commands.json
