@@ -3,7 +3,7 @@
 
 #include "ErrorDef.h"
 
-class CCombFilterBase;
+//class CCombFilterBase;
 
 /*! \brief interface class for the comb filter (FIR & IIR)
 */
@@ -100,12 +100,16 @@ protected:
 
 private:
     bool            m_bIsInitialized;   //!< internal bool to check whether the init function has been called
-    CCombFilterBase *m_pCCombFilter;    //!< handle of the comb filter
+    //CCombFilterIf  *m_pCCombFilter;    //!< handle of the comb filter
 
     float           m_fSampleRate;      //!< audio sample rate in Hz
+
+    virtual Error_t initIntern( CombFilterType_t eFilterType, float fMaxDelayLengthInS, float fSampleRateInHz, int iNumChannels ) = 0;
+    virtual Error_t resetIntern() = 0;
+
+    virtual Error_t processIntern( float **ppfInputBuffer, float **ppfOutputBuffer, int iNumberOfFrames ) = 0;
+    virtual Error_t setParamIntern( FilterParam_t eParam, float fParamValue ) = 0;
+    virtual float getParamIntern( FilterParam_t eParam ) const = 0;
 };
 
 #endif // #if !defined(__CombFilterIf_hdr__)
-
-
-

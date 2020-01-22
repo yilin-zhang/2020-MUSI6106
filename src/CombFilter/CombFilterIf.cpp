@@ -8,13 +8,14 @@
 #include "Util.h"
 
 #include "CombFilterIf.h"
+#include "CombFilter.h"
 
 static const char*  kCMyProjectBuildDate             = __DATE__;
 
 
 CCombFilterIf::CCombFilterIf () :
     m_bIsInitialized(false),
-    m_pCCombFilter(0),
+    //TODO: check if revoming this is correct m_pCCombFilter(0),
     m_fSampleRate(0)
 {
     // this never hurts
@@ -56,35 +57,60 @@ const char*  CCombFilterIf::getBuildDate ()
 
 Error_t CCombFilterIf::create( CCombFilterIf*& pCCombFilter)
 {
+    pCCombFilter = new CCombFilterBase();
+
+    if (!pCCombFilter)
+        return kMemError;
+
     return kNoError;
 }
 
 Error_t CCombFilterIf::destroy (CCombFilterIf*& pCCombFilter)
 {
+    delete pCCombFilter;
+    pCCombFilter = 0;
+
     return kNoError;
 }
 
 Error_t CCombFilterIf::init( CombFilterType_t eFilterType, float fMaxDelayLengthInS, float fSampleRateInHz, int iNumChannels )
 {
-    return kNoError;
+
+    Error_t error_init = initIntern(eFilterType, fMaxDelayLengthInS, fSampleRateInHz, iNumChannels);
+    if (error_init == kNoError)
+        m_bIsInitialized = true;
+
+    return error_init;
 }
 
 Error_t CCombFilterIf::reset ()
 {
+    if (m_bIsInitialized) {
+        Error_t error = resetIntern();
+        if (error == kNoError)
+            m_bIsInitialized = false;
+        return error;
+    }
     return kNoError;
 }
 
 Error_t CCombFilterIf::process( float **ppfInputBuffer, float **ppfOutputBuffer, int iNumberOfFrames )
 {
-    return kNoError;
+    Error_t error = processIntern(ppfInputBuffer, ppfOutputBuffer, iNumberOfFrames);
+    return error;
 }
 
 Error_t CCombFilterIf::setParam( FilterParam_t eParam, float fParamValue )
 {
-    return kNoError;
+    // TODO: Error checking
+    // gain (-1, 1)
+    // maxdelay
+    Error_t error = setParamIntern(eParam, fParamValue);
+    return error;
 }
 
 float CCombFilterIf::getParam( FilterParam_t eParam ) const
 {
-    return 0;
+    float param = getParamIntern(eParam);
+    return param;
 }
