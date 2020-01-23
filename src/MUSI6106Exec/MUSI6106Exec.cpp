@@ -24,11 +24,11 @@ void testReset ();
 // main function
 int main(int argc, char* argv[])
 {
-    testFIRInputFreqFeedforward();
-    testIIRMagnitudeChange();
-    testVaryingBlockSize();
+    // testFIRInputFreqFeedforward();
+    // testIIRMagnitudeChange();
+    // testVaryingBlockSize();
     testZeroInput();
-    testReset();
+    // testReset();
 
     //////////////////////////////////////////////////////////////////////////////
     // parse command line arguments
