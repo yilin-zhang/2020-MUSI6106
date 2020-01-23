@@ -15,7 +15,6 @@ static const char*  kCMyProjectBuildDate             = __DATE__;
 
 CCombFilterIf::CCombFilterIf () :
     m_bIsInitialized(false),
-    //TODO: check if revoming this is correct m_pCCombFilter(0),
     m_fSampleRate(0)
 {
     // this never hurts
@@ -103,7 +102,6 @@ Error_t CCombFilterIf::process( float **ppfInputBuffer, float **ppfOutputBuffer,
 Error_t CCombFilterIf::setParam( FilterParam_t eParam, float fParamValue )
 {
     // TODO: Error checking
-    // gain (-1, 1)
     // maxdelay
     Error_t error = setParamIntern(eParam, fParamValue);
     return error;

@@ -54,7 +54,7 @@ Error_t CCombFilterBase::resetIntern ()
     // reset the delayLine and its counter
     if (m_bIsInitializedIntern) {
         for (int i=0; i<m_iNumChannels; ++i)
-            delete m_pfDelayLine[i];
+            delete[] m_pfDelayLine[i];
         delete[] m_pfDelayLine;
     }
 
@@ -73,6 +73,8 @@ Error_t CCombFilterBase::setParamIntern( CCombFilterBase::FilterParam_t eParam, 
         m_fFilterGain = fParamValue;
         break;
     case CCombFilterBase::kParamDelay:
+        if (fParamValue > m_fMaxDeleyLength)
+            return kFunctionInvalidArgsError;
         m_fDelayTime = fParamValue;
         m_delayLineCounter.delayLineSize = fParamValue * m_fSampleRateInHz;
         break;

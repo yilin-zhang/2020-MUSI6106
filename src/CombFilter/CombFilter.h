@@ -36,7 +36,7 @@ private:
 
     // parameters for users to set after the initialization
     float m_fFilterGain;
-    int   m_fDelayTime;
+    float m_fDelayTime;
 
     void FIRProcess (float **ppfInputBuffer, float **ppfOutputBuffer, int iNumberOfFrames);
     void IIRProcess (float **ppfInputBuffer, float **ppfOutputBuffer, int iNumberOfFrames);
