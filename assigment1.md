@@ -3,16 +3,16 @@
 ## Real-world Examples
 Using both FIR and IIR Filter.
 
-* Filter Gain: 0.5
-* Delay Time: 0.5 s
+* Filter Gain: 0.2
+* Delay Time: 0.1 s
 
-### Saxophone
-![](./img/saxophone_fir.png)
-![](./img/saxophone_iir.png)
+### Sample 1 (Sweep)
+![](./img/sample_1_fir.png)
+![](./img/sample_1_iir.png)
 
-### Sweep
-![](./img/sweep_fir.png)
-![](./img/sweep_iir.png)
+### Sample 2 (Saxophone)
+![](./img/sample_2_fir.png)
+![](./img/sample_2_iir.png)
 
 ## Tests
 Some tests here are not fully automated and require some manual checking. For

@@ -73,7 +73,7 @@ Error_t CCombFilterBase::setParamIntern( CCombFilterBase::FilterParam_t eParam, 
         m_fFilterGain = fParamValue;
         break;
     case CCombFilterBase::kParamDelay:
-        if (fParamValue > m_fMaxDeleyLength)
+        if (fParamValue > m_fMaxDeleyLength || int(fParamValue * m_fSampleRateInHz) == 0)
             return kFunctionInvalidArgsError;
         m_fDelayTime = fParamValue;
         m_delayLineCounter.delayLineSize = fParamValue * m_fSampleRateInHz;

@@ -14,6 +14,8 @@ using namespace std;
 void    showClInfo ();
 
 // Tests
+void realWorldSample1 ();
+void realWorldSample2 ();
 void testFIRInputFreqFeedforward ();
 void testIIRMagnitudeChange ();
 void testVaryingBlockSize ();
@@ -24,10 +26,12 @@ void testReset ();
 // main function
 int main(int argc, char* argv[])
 {
+    realWorldSample1 ();
+    realWorldSample2 ();
     // testFIRInputFreqFeedforward();
     // testIIRMagnitudeChange();
     // testVaryingBlockSize();
-    testZeroInput();
+    // testZeroInput();
     // testReset();
 
     //////////////////////////////////////////////////////////////////////////////
@@ -191,6 +195,32 @@ int mainProcess (Args argCollection)
 
 //////////////////////////////////////////////////////////////////////////////
 // Tests
+
+// Read-world cases
+void realWorldSample1 () {
+    cout << "realWorldSample1 starts" << endl;
+    Args args;
+    args.inputAudioPath = "/Users/yilin/Desktop/sax.wav";
+    args.outputAudioPath = "/Users/yilin/Desktop/sax_out_fir.wav";
+    args.blockSize = 1024;
+    args.filterType = CCombFilterIf::kCombFIR;
+    args.delayGain = 0.2;
+    args.delayTime = 0.1;
+    mainProcess(args);
+}
+
+void realWorldSample2() {
+    cout << "realWorldSample1 starts" << endl;
+    Args args;
+    args.inputAudioPath = "/Users/yilin/Desktop/sax.wav";
+    args.outputAudioPath = "/Users/yilin/Desktop/sax_out_iir.wav";
+    args.blockSize = 1024;
+    args.filterType = CCombFilterIf::kCombIIR;
+    args.delayGain = 0.2;
+    args.delayTime = 0.1;
+    mainProcess(args);
+}
+
 
 // Test Case 1
 void testFIRInputFreqFeedforward () {
