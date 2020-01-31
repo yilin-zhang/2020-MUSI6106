@@ -7,12 +7,12 @@ Using both FIR and IIR Filter.
 * Delay Time: 0.1 s
 
 ### Sample 1 (Sweep)
-![](./img/sample_1_fir.png)
-![](./img/sample_1_iir.png)
+![](./img/sample_1_fir.bmp)
+![](./img/sample_1_iir.bmp)
 
 ### Sample 2 (Saxophone)
-![](./img/sample_2_fir.png)
-![](./img/sample_2_iir.png)
+![](./img/sample_2_fir.bmp)
+![](./img/sample_2_iir.bmp)
 
 ## Tests
 Some tests here are not fully automated and require some manual checking. For
