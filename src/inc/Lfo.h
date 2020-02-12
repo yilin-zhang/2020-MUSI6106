@@ -87,7 +87,7 @@ class CLfo {
             if (fParam < m_fMinFreq)
                 return kFunctionIllegalCallError;
             m_fFreq = fParam;
-            m_iHop = round(m_fFreq / m_fMinFreq);
+            m_fHop = m_fFreq / m_fMinFreq;
             break;
         default:
             return kFunctionIllegalCallError;
@@ -122,13 +122,13 @@ class CLfo {
         m_pfWavetable = nullptr;
 
         m_iWavetableLength = 0;
-        m_iWavetablePos = 0;
+        m_fWavetablePos = 0;
         m_fSampleRate = 0;
 
         m_fMinFreq = 0;
         m_fAmp = 0;
         m_fFreq = 0;
-        m_iHop = 0;
+        m_fHop = 0;
 
         m_bIsInitialized = false;
 
@@ -139,7 +139,7 @@ class CLfo {
     \return Error_t
     */
     Error_t resetPos() {
-        m_iWavetablePos = 0;
+        m_fWavetablePos = 0;
         return kNoError;
     }
 
@@ -147,8 +147,11 @@ class CLfo {
       \return float
     */
     float getValue() {
-        int idx = m_iWavetablePos;
-        m_iWavetablePos = (m_iWavetablePos + 1) % m_iWavetableLength;
+        int idx = round(m_fWavetablePos);
+        if (round(m_fWavetablePos + m_fHop) > m_iWavetableLength - 1)
+            m_fWavetablePos = m_fWavetablePos + m_fHop - float(m_iWavetableLength);
+        else
+            m_fWavetablePos += m_fHop;
         return m_pfWavetable[idx];
     }
 
@@ -203,12 +206,12 @@ private:
 
     float *m_pfWavetable;
     int m_iWavetableLength;
-    int m_iWavetablePos;
+    float m_fWavetablePos;
 
     float m_fMinFreq; // minimum frequency in Hz
     float m_fAmp;
     float m_fFreq;    // current frequency in Hz
-    int   m_iHop;
+    float m_fHop;
 };
 
 #endif // #if !defined(__Lfo_hdr__)
