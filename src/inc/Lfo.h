@@ -70,7 +70,7 @@ class CLfo {
     }
 
     /*! set a paramter for the Lfo instance
-    \param eType the parameter type
+    \param eParam the parameter type
     \param fParam the parameter value
     \return Error_t
     */
@@ -96,7 +96,7 @@ class CLfo {
     }
 
     /*! get a paramter for the Lfo instance
-    \param eType the parameter type
+    \param eParam the parameter type
     \return float
     */
     float getParam (LfoParam_t eParam) const {
