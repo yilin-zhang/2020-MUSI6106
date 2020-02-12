@@ -19,32 +19,13 @@ class CLfo {
         kParamFreq,
     };
 
-    /*! creates a new Lfo instance
-    \param pCLfo pointer to the new class
-    \return Error_t
-    */
-    static Error_t create (CLfo*& pCLfo) {
-        pCLfo = new CLfo ();
+    CLfo () {
+        reset(false);
+    };
 
-        if (!pCLfo)
-            return kUnknownError;
-
-        return kNoError;
-    }
-
-    /*! destroys an Lfo instance
-    \param pCLfo pointer to the class to be destroyed
-    \return Error_t
-    */
-    static Error_t destroy (CLfo*& pCLfo) {
-        if (!pCLfo)
-            return kUnknownError;
-
-        delete pCLfo;
-        pCLfo = nullptr;
-
-        return kNoError;
-    }
+    ~CLfo () {
+        reset(true);
+    };
 
     /*! initializes an Lfo instance
     \param eType the type of the LFO
@@ -154,14 +135,6 @@ class CLfo {
             m_fWavetablePos += m_fHop;
         return m_pfWavetable[idx];
     }
-
-protected:
-    CLfo () {
-        reset(false);
-    };
-    ~CLfo () {
-        reset(true);
-    };
 
 private:
     static float sinFunc(int ind, int bufferLength) {
