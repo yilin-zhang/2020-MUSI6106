@@ -81,16 +81,13 @@ class CLfo {
     \return float
     */
     float getParam (LfoParam_t eParam) const {
-        if (!m_bIsInitialized) // indicates illeagal argument
-            return -1;
-
         switch (eParam) {
         case kParamAmp:
             return m_fAmp;
         case kParamFreq:
             return m_fFreq;
         default:
-            return -1; // indicates illeagal argument
+            return 0;
         }
     }
 
