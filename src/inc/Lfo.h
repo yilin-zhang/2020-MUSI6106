@@ -34,6 +34,8 @@ class CLfo {
     \return Error_t
     */
     Error_t init (LfoType_t eType, float fMinFreq, float fSampleRate) {
+        if (m_bIsInitialized)
+            return kFunctionIllegalCallError;
         if (fMinFreq <= 0 || fSampleRate <= 0)
             return kFunctionInvalidArgsError;
 
