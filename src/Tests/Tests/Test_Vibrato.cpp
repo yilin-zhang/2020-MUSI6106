@@ -257,6 +257,12 @@ SUITE(Vibrato) {
             err = vib.setParam(CVibrato::kParamBlockSize, -1);
             CHECK(err == kFunctionInvalidArgsError);
 
+            // delay time is bigger than max delay time
+            err = vib.setParam(CVibrato::kParamDelay, 0.2);
+            CHECK(err == kNoError);
+            err = vib.setParam(CVibrato::kParamDelay, 0.3);
+            CHECK(err == kFunctionInvalidArgsError);
+
             // double-reset
             vib.reset();
             err = vib.reset();
