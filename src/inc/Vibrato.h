@@ -107,35 +107,25 @@ class CVibrato {
     \return Error_t
     */
     Error_t process (float *pfInputBuffer, float *pfOutputBuffer) {
-        // TODO maybe remove the if statement in the future
-        int offset = 0;
-        int lastWriteIdx = 0;
-        int bufferWriteIdx = 0; // save the buffer position before LFO is enabled
-
+        // move the read pointer to the middle
+        // e.g. m_iDelayLineSize == 12
+        // [*------*----]
+        //  |      |
+        // write  read
+        //
+        // The read pointer should always be behind, so actually it moves
+        // the read pointer back.
         if (!m_bIsLfoEnabled) {
-            // resume from the last write point
-            lastWriteIdx = m_delayLine->getWriteIdx();
-            for (int i=0; i<m_iDelayLineSize-lastWriteIdx-1 && i<m_iBlockSize; ++i) {
-                m_delayLine->putPostInc(pfInputBuffer[i]);
-                pfOutputBuffer[i] = 0;
-                bufferWriteIdx++;
-            }
-            // if the write pointer is pointing to the last cell,
-            // then move the read pointer to the middle, and enable
-            // the LFO
-            if (m_delayLine->getWriteIdx() == m_iDelayLineSize - 1) {
-                for (int i=0; i<m_iDelayLineSize-m_iMaxVibAmp-2; ++i)
-                    m_delayLine->getPostInc();
-                m_bIsLfoEnabled = true;
-            }
+            for (int i=0; i<m_iDelayLineSize-m_iMaxVibAmp; ++i)
+                m_delayLine->getPostInc();
+            m_bIsLfoEnabled = true;
         }
 
-        if (m_bIsLfoEnabled && bufferWriteIdx<m_iBlockSize) {
-            for (int i=bufferWriteIdx; i<m_iBlockSize; ++i) {
-                pfOutputBuffer[i] = m_delayLine->get(m_Lfo.getValue());
-                m_delayLine->getPostInc(); // increment the read index
-                m_delayLine->putPostInc(pfInputBuffer[i]);
-            }
+        // Based on the MATLAB implementation, write first, read second
+        for (int i=0; i<m_iBlockSize; ++i) {
+            m_delayLine->putPostInc(pfInputBuffer[i]);
+            pfOutputBuffer[i] = m_delayLine->get(m_Lfo.getValue());
+            m_delayLine->getPostInc(); // increment the read index
         }
     }
 
