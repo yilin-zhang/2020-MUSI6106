@@ -77,6 +77,9 @@ class CVibrato {
     float getParam (VibParam_t eParam) const {
         switch (eParam) {
         case kParamDelay:
+            if (m_fSampleRate < 0.000001) {
+                return 0;
+            }
             return m_Lfo.getParam(CLfo::kParamAmp)/m_fSampleRate;
         case kParamFreq:
             return m_Lfo.getParam(CLfo::kParamFreq);
