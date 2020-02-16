@@ -27,7 +27,7 @@ class CVibrato {
     \param float sample rate
     \return Error_t
     */
-    Error_t init (float fDelayTime, float fSampleRate) {
+    Error_t init (float fMaxDelayTime, float fSampleRate) {
         // TODO Convert the unit of max_amp to Hz
         if (m_bIsInitialized)
             return kFunctionIllegalCallError;
@@ -36,7 +36,7 @@ class CVibrato {
         if (err != kNoError)
             return err;
         m_fSampleRate = fSampleRate;
-        m_iMaxVibAmp = ceil(fDelayTime * fSampleRate);
+        m_iMaxVibAmp = ceil(fMaxDelayTime * fSampleRate);
         m_iDelayLineSize = 2 * m_iMaxVibAmp + 2;
         m_delayLine = new CRingBuffer<float> (m_iDelayLineSize);
         m_bIsInitialized = true;
