@@ -1,3 +1,4 @@
+/*
 #include "MUSI6106Config.h"
 
 #ifdef WITH_TESTS
@@ -342,3 +343,4 @@ SUITE(AudioIo)
 }
 
 #endif //WITH_TESTS
+*/
