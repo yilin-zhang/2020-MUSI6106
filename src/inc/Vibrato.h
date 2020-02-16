@@ -63,6 +63,8 @@ class CVibrato {
             err = m_Lfo.setParam(CLfo::kParamFreq, fParam);
             break;
         case kParamBlockSize:
+            if (fParam <= 0)
+                return kFunctionInvalidArgsError;
             m_iBlockSize = int(fParam);
         default:
             return kFunctionIllegalCallError;
