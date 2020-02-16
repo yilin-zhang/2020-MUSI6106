@@ -25,11 +25,12 @@ class CVibrato {
     /*! initializes a vibrato filter instance
     \return Error_t
     */
-    Error_t init (float fMinVibFreq, int iMaxVibAmp, float fSampleRate) {
+    Error_t init (int iMaxVibAmp, float fSampleRate) {
         // TODO Convert the unit of max_amp to Hz
         if (m_bIsInitialized)
             return kFunctionIllegalCallError;
-        auto err = m_Lfo.init(CLfo::kSin, fMinVibFreq, fSampleRate);
+        // TODO I forced it to use sample rate to be the wave length
+        auto err = m_Lfo.init(CLfo::kSin, fSampleRate, fSampleRate);
         if (err != kNoError)
             return err;
         m_iMaxVibAmp = iMaxVibAmp;

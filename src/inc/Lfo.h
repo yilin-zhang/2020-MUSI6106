@@ -33,18 +33,18 @@ class CLfo {
     \param fSampleRate sample rate in Hz of audio (should match the processed signal)
     \return Error_t
     */
-    Error_t init (LfoType_t eType, float fMinFreq, float fSampleRate) {
+    Error_t init (LfoType_t eType, int iWavetableLength, float fSampleRate) {
         if (m_bIsInitialized)
             return kFunctionIllegalCallError;
-        if (fMinFreq <= 0 || fSampleRate <= 0)
+        if (iWavetableLength <= 0 || fSampleRate <= 0)
             return kFunctionInvalidArgsError;
 
         m_fSampleRate = fSampleRate;
-        m_fMinFreq = fMinFreq;
+        m_iWavetableLength = iWavetableLength;
+        m_fWavetableFreq = m_fSampleRate / m_iWavetableLength;
         m_kLfoType = eType;
 
         // allocate memory
-        m_iWavetableLength = ceil(fSampleRate / fMinFreq);
         m_pfWavetable = new float[m_iWavetableLength];
 
         m_bIsInitialized = true;
@@ -67,10 +67,8 @@ class CLfo {
             initWavetable(m_pfWavetable, fParam);
             break;
         case kParamFreq:
-            if (fParam < m_fMinFreq)
-                return kFunctionIllegalCallError;
             m_fFreq = fParam;
-            m_fHop = m_fFreq / m_fMinFreq;
+            m_fHop = m_fFreq / m_fWavetableFreq;
             break;
         default:
             return kFunctionIllegalCallError;
@@ -105,7 +103,7 @@ class CLfo {
         m_fWavetablePos = 0;
         m_fSampleRate = 0;
 
-        m_fMinFreq = 0;
+        m_fWavetableFreq = 0;
         m_fAmp = 0;
         m_fFreq = 0;
         m_fHop = 0;
@@ -123,16 +121,26 @@ class CLfo {
         return kNoError;
     }
 
-    /*! get the current LFO value
-      \return float
+    /*! get the current LFO value, using linear interpolation
+    \return float
     */
     float getValue() {
-        int idx = round(m_fWavetablePos);
+        int idx_l = floor(m_fWavetablePos);
+        int idx_r = (idx_l + 1) % m_iWavetableLength;
+        int frac = m_fWavetablePos - idx_l;
+        // update read position
         if (round(m_fWavetablePos + m_fHop) > m_iWavetableLength - 1)
             m_fWavetablePos = m_fWavetablePos + m_fHop - float(m_iWavetableLength);
         else
             m_fWavetablePos += m_fHop;
-        return m_pfWavetable[idx];
+        return m_pfWavetable[idx_l] * (frac-1) + m_pfWavetable[idx_r] * frac;
+    }
+
+    /*! get the current LFO position
+      \return float
+    */
+    float getPosition() {
+        return m_fWavetablePos;
     }
 
 private:
@@ -180,7 +188,7 @@ private:
     int m_iWavetableLength;
     float m_fWavetablePos;
 
-    float m_fMinFreq; // minimum frequency in Hz
+    float m_fWavetableFreq;
     float m_fAmp;
     float m_fFreq;    // current frequency in Hz
     float m_fHop;
