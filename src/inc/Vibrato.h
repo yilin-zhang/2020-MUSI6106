@@ -9,7 +9,7 @@ class CVibrato {
  public:
     /*! resetable parameters */
     enum VibParam_t {
-        kParamAmp,
+        kParamDelay,
         kParamFreq,
         kParamBlockSize, // block size can be changed after the init
     };
@@ -23,9 +23,11 @@ class CVibrato {
     }
 
     /*! initializes a vibrato filter instance
+    \param float the maximum delay time
+    \param float sample rate
     \return Error_t
     */
-    Error_t init (int iMaxVibAmp, float fSampleRate) {
+    Error_t init (float fDelayTime, float fSampleRate) {
         // TODO Convert the unit of max_amp to Hz
         if (m_bIsInitialized)
             return kFunctionIllegalCallError;
@@ -33,8 +35,9 @@ class CVibrato {
         auto err = m_Lfo.init(CLfo::kSin, fSampleRate, fSampleRate);
         if (err != kNoError)
             return err;
-        m_iMaxVibAmp = iMaxVibAmp;
-        m_iDelayLineSize = 2 * iMaxVibAmp + 2;
+        m_fSampleRate = fSampleRate;
+        m_iMaxVibAmp = ceil(fDelayTime * fSampleRate);
+        m_iDelayLineSize = 2 * m_iMaxVibAmp + 2;
         m_delayLine = new CRingBuffer<float> (m_iDelayLineSize);
         m_bIsInitialized = true;
 
@@ -53,8 +56,8 @@ class CVibrato {
         Error_t err;
 
         switch (eParam) {
-        case kParamAmp:
-            err = m_Lfo.setParam(CLfo::kParamAmp, fParam);
+        case kParamDelay:
+            err = m_Lfo.setParam(CLfo::kParamAmp, fParam*m_fSampleRate);
             break;
         case kParamFreq:
             err = m_Lfo.setParam(CLfo::kParamFreq, fParam);
@@ -73,8 +76,8 @@ class CVibrato {
     */
     float getParam (VibParam_t eParam) const {
         switch (eParam) {
-        case kParamAmp:
-            return m_Lfo.getParam(CLfo::kParamAmp);
+        case kParamDelay:
+            return m_Lfo.getParam(CLfo::kParamAmp)/m_fSampleRate;
         case kParamFreq:
             return m_Lfo.getParam(CLfo::kParamFreq);
         case kParamBlockSize:
@@ -145,6 +148,7 @@ private:
 
         m_iBlockSize = 0;
         m_iDelayLineSize = 0;
+        m_fSampleRate = 0;
         m_bIsLfoEnabled = false;
         m_bIsInitialized = false;
         return kNoError;
@@ -157,6 +161,7 @@ private:
     bool               m_bIsLfoEnabled; // only enabling LFO when we have enough samples
     int                m_iBlockSize;
     int                m_iMaxVibAmp;
+    float              m_fSampleRate;
 };
 
 #endif // #if !defined(__Vibrato_hdr__)
