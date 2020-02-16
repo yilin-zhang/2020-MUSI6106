@@ -5,7 +5,7 @@
 #include "MUSI6106Config.h"
 
 #include "AudioFileIf.h"
-//#include "CombFilterIf.h"
+#include "Vibrato.h"
 
 using std::cout;
 using std::endl;
@@ -18,6 +18,7 @@ void    showClInfo ();
 int main(int argc, char* argv[])
 {
     std::string             sInputFilePath,                 //!< file paths
+                            sOutputTextPath,
                             sOutputFilePath;
 
     static const int        kBlockSize = 1024;
@@ -25,10 +26,15 @@ int main(int argc, char* argv[])
     clock_t                 time = 0;
 
     float                   **ppfAudioData = 0;
+    float                   **ppfOutputData = 0;
 
     CAudioFileIf            *phAudioFile = 0;
-    std::fstream            hOutputFile;
+    std::fstream            hOutputText;
     CAudioFileIf::FileSpec_t stFileSpec;
+
+    CAudioFileIf            *phOutputAudioFile = 0;
+    CVibrato                vib_1;
+    CVibrato                vib_2;
 
     //CCombFilterIf   *pInstance = 0;
     //CCombFilterIf::create(pInstance);
@@ -44,7 +50,8 @@ int main(int argc, char* argv[])
     else
     {
         sInputFilePath = argv[1];
-        sOutputFilePath = sInputFilePath + ".txt";
+        sOutputTextPath = sInputFilePath + ".txt";
+        sOutputFilePath = sInputFilePath + "output.wav";
     }
 
     //////////////////////////////////////////////////////////////////////////////
@@ -60,8 +67,8 @@ int main(int argc, char* argv[])
 
     //////////////////////////////////////////////////////////////////////////////
     // open the output text file
-    hOutputFile.open(sOutputFilePath.c_str(), std::ios::out);
-    if (!hOutputFile.is_open())
+    hOutputText.open(sOutputTextPath.c_str(), std::ios::out);
+    if (!hOutputText.is_open())
     {
         cout << "Text file open error!";
         return -1;
@@ -73,6 +80,32 @@ int main(int argc, char* argv[])
     for (int i = 0; i < stFileSpec.iNumChannels; i++)
         ppfAudioData[i] = new float[kBlockSize];
 
+    ppfOutputData = new float*[stFileSpec.iNumChannels];
+    for (int i = 0; i < stFileSpec.iNumChannels; i++)
+        ppfOutputData[i] = new float[kBlockSize];
+
+    //////////////////////////////////////////////////////////////////////////////
+    // open the output wave file
+    CAudioFileIf::create(phOutputAudioFile);
+    phOutputAudioFile->openFile(sOutputFilePath, CAudioFileIf::kFileWrite, &stFileSpec);
+    if (!phOutputAudioFile->isOpen())
+    {
+        cout << "Output Wave file open error!";
+        return -1;
+    }
+
+    //////////////////////////////////////////////////////////////////////////////
+    // initialize vibrato
+    vib_1.init(50.f/44100.f, 44100);
+    vib_1.setParam(CVibrato::kParamDelay, 50.f/44100.f);
+    vib_1.setParam(CVibrato::kParamFreq, 5);
+    vib_1.setParam(CVibrato::kParamBlockSize, kBlockSize);
+
+    vib_2.init(50.f/44100.f, 44100);
+    vib_2.setParam(CVibrato::kParamDelay, 50.f/44100.f);
+    vib_2.setParam(CVibrato::kParamFreq, 5);
+    vib_2.setParam(CVibrato::kParamBlockSize, kBlockSize);
+
     time = clock();
     //////////////////////////////////////////////////////////////////////////////
     // get audio data and write it to the output file
@@ -83,13 +116,23 @@ int main(int argc, char* argv[])
 
         cout << "\r" << "reading and writing";
 
+        for (int c=0; c<2; ++c) {
+            if (c == 0) {
+                vib_1.process(ppfAudioData[0], ppfOutputData[0]);
+            } else {
+                vib_2.process(ppfAudioData[1], ppfOutputData[1]);
+            }
+        }
+
+        phOutputAudioFile->writeData(ppfOutputData, iNumFrames);
+
         for (int i = 0; i < iNumFrames; i++)
         {
             for (int c = 0; c < stFileSpec.iNumChannels; c++)
             {
-                hOutputFile << ppfAudioData[c][i] << "\t";
+                hOutputText << ppfAudioData[c][i] << "\t";
             }
-            hOutputFile << endl;
+            hOutputText << endl;
         }
     }
 
@@ -98,11 +141,18 @@ int main(int argc, char* argv[])
     //////////////////////////////////////////////////////////////////////////////
     // clean-up
     CAudioFileIf::destroy(phAudioFile);
-    hOutputFile.close();
+    hOutputText.close();
+
+    CAudioFileIf::destroy(phOutputAudioFile);
 
     for (int i = 0; i < stFileSpec.iNumChannels; i++)
         delete[] ppfAudioData[i];
     delete[] ppfAudioData;
+    ppfAudioData = 0;
+
+    for (int i = 0; i < stFileSpec.iNumChannels; i++)
+        delete[] ppfOutputData[i];
+    delete[] ppfOutputData;
     ppfAudioData = 0;
 
     return 0;
