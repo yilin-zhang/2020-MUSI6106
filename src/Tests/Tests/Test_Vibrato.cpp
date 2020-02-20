@@ -288,6 +288,55 @@ SUITE(Vibrato) {
             delete[] outputBuffer;
         }
 
+        void testInplace () {
+            int blockSize = 20;
+            int audioLength = 200;
+            float sampleRate = 50;
+            int numChannels = 2;
+            float maxDelay = 0.2;
+            float freq = 2;
+            float delay = 0.1;
+
+            vib.init(maxDelay, sampleRate, numChannels);
+            vib.setParam(CVibrato::kParamFreq, freq);
+            vib.setParam(CVibrato::kParamDelay, delay);
+            vib.setParam(CVibrato::kParamBlockSize, blockSize);
+
+            // Memory allocation and initialization
+            float **audio = nullptr;
+            allocMemory(audio, numChannels, audioLength);
+            for (int i=0; i<audioLength; i++)
+                for (int c=0; c<numChannels; c++)
+                    audio[c][i] = (i % 5) / 10.f;
+
+            float **output = nullptr;
+            allocMemory(output, numChannels, audioLength);
+            for (int c=0; c<numChannels; c++)
+                output[c] = new float[audioLength];
+
+            // non-inplace process
+            audioProcess(audio, output, numChannels, blockSize, audioLength);
+
+            // reset
+            vib.reset();
+            vib.init(maxDelay, sampleRate, numChannels);
+            vib.setParam(CVibrato::kParamFreq, freq);
+            vib.setParam(CVibrato::kParamDelay, delay);
+            vib.setParam(CVibrato::kParamBlockSize, blockSize);
+
+            // inplace process
+            audioProcess(audio, audio, numChannels, blockSize, audioLength);
+
+            // check
+            for (int c=0; c<numChannels; c++)
+                for (int i=0; i<audioLength; i++)
+                    CHECK(audio[c][i] == output[c][i]);
+
+            // clean up
+            deallocMemory(audio, numChannels);
+            deallocMemory(output, numChannels);
+        }
+
         void testInvalidInputs () {
             Error_t err;
             // init
@@ -344,6 +393,11 @@ SUITE(Vibrato) {
     TEST_FIXTURE(VibratoData, BlockSizeTest) {
         VibratoData vibdata;
         vibdata.testBlockSize();
+    }
+
+    TEST_FIXTURE(VibratoData, InplaceTest) {
+        VibratoData vibdata;
+        vibdata.testInplace();
     }
 
     TEST_FIXTURE(VibratoData, InvalidInputsTest) {

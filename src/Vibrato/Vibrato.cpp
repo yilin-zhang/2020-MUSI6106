@@ -102,7 +102,6 @@ Error_t CVibrato::process (float **ppfInputBuffer, float **ppfOutputBuffer, int 
     }
 
     // Based on the MATLAB implementation, write first, read second
-    // TODO: read first, write second
     for (int i=0; i<m_iBlockSize && i<iNumFrames; ++i) {
         lfoValue = m_Lfo.getValue();
         for (int c=0; c<m_iNumChannels; ++c) {
