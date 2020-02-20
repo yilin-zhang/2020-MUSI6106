@@ -8,6 +8,7 @@
 #include "Vibrato.h"
 
 using std::cout;
+using std::cerr;
 using std::endl;
 
 // local function declarations
@@ -32,6 +33,8 @@ int main(int argc, char* argv[])
     std::fstream            hOutputText;
     CAudioFileIf::FileSpec_t stFileSpec;
 
+    float                   fDelayTime = 0;
+    float                   fVibFreq = 0;
     CAudioFileIf            *phOutputAudioFile = 0;
     CVibrato                vib;
 
@@ -41,16 +44,26 @@ int main(int argc, char* argv[])
 
     //////////////////////////////////////////////////////////////////////////////
     // parse command line arguments
-    if (argc < 2)
+    if (argc < 4)
     {
-        cout << "Missing audio input path!";
+        cerr << "Missing arugment(s)!" << endl;
+        cerr << "arg1: audio file path\narg2: delay time in s\narg3: vibrato frequency in Hz" << endl;
         return -1;
     }
     else
     {
         sInputFilePath = argv[1];
         sOutputTextPath = sInputFilePath + ".txt";
-        sOutputFilePath = sInputFilePath + "output.wav";
+        sOutputFilePath = sInputFilePath.substr(0, sInputFilePath.size()-4) + "_output_cpp.wav";
+        fDelayTime = std::stof(argv[2]);
+        fVibFreq = std::stof(argv[3]);
+        if (fDelayTime <= 0 || fVibFreq <= 0) {
+            cerr << "Invalid argument(s)." << endl;
+            return -1;
+        }
+        cout << "Output Path: " << sOutputFilePath << endl;
+        cout << "Delay Time: " << fDelayTime << " s" << endl;
+        cout << "Vibrato Frequency: " << fVibFreq << " Hz" << endl;
     }
 
     //////////////////////////////////////////////////////////////////////////////
@@ -95,9 +108,9 @@ int main(int argc, char* argv[])
 
     //////////////////////////////////////////////////////////////////////////////
     // initialize vibrato
-    vib.init(50.f/44100.f, 44100, stFileSpec.iNumChannels);
-    vib.setParam(CVibrato::kParamDelay, 50.f/44100.f);
-    vib.setParam(CVibrato::kParamFreq, 5);
+    vib.init(fDelayTime, stFileSpec.fSampleRateInHz, stFileSpec.iNumChannels);
+    vib.setParam(CVibrato::kParamDelay, fDelayTime);
+    vib.setParam(CVibrato::kParamFreq, fVibFreq);
     vib.setParam(CVibrato::kParamBlockSize, kBlockSize);
 
     time = clock();
