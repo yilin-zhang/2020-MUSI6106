@@ -12,17 +12,25 @@ CVibrato::~CVibrato() {
     resetIntern(true);
 }
 
-Error_t CVibrato::init (float fMaxDelayTime, float fSampleRate) {
+Error_t CVibrato::init (float fMaxDelayTime, float fSampleRate, int iNumChannels = 1) {
     if (m_bIsInitialized)
         return kFunctionIllegalCallError;
     // TODO I forced it to use sample rate to be the wave length
     auto err = m_Lfo.init(CLfo::kSin, fSampleRate, fSampleRate);
     if (err != kNoError)
         return err;
+    if (iNumChannels < 1)
+        return kFunctionInvalidArgsError;
+
     m_fSampleRate = fSampleRate;
+    m_iNumChannels = iNumChannels;
     m_iMaxVibAmp = ceil(fMaxDelayTime * fSampleRate);
     m_iDelayLineSize = 2 * m_iMaxVibAmp + 2;
-    m_delayLine = new CRingBuffer<float> (m_iDelayLineSize);
+
+    m_ppDelayLine = new CRingBuffer<float>* [iNumChannels];
+    for (int i=0; i<iNumChannels; ++i)
+        m_ppDelayLine[i] = new CRingBuffer<float> (m_iDelayLineSize);
+
     m_bIsInitialized = true;
 
     return kNoError;
@@ -76,7 +84,8 @@ Error_t CVibrato::reset () {
         return resetIntern(true);
 }
 
-Error_t CVibrato::process (float *pfInputBuffer, float *pfOutputBuffer) {
+Error_t CVibrato::process (float **ppfInputBuffer, float **ppfOutputBuffer, int iNumFrames) {
+    float lfoValue = 0.f;
     // move the read pointer to the middle
     // e.g. m_iDelayLineSize == 12
     // [*------*----]
@@ -87,22 +96,30 @@ Error_t CVibrato::process (float *pfInputBuffer, float *pfOutputBuffer) {
     // the read pointer back.
     if (!m_bIsLfoEnabled) {
         for (int i=0; i<m_iDelayLineSize-m_iMaxVibAmp; ++i)
-            m_delayLine->getPostInc();
+            for (int c=0; c<m_iNumChannels; ++c)
+                m_ppDelayLine[c]->getPostInc();
         m_bIsLfoEnabled = true;
     }
 
     // Based on the MATLAB implementation, write first, read second
-    for (int i=0; i<m_iBlockSize; ++i) {
-        m_delayLine->putPostInc(pfInputBuffer[i]);
-        pfOutputBuffer[i] = m_delayLine->get(m_Lfo.getValue());
-        m_delayLine->getPostInc(); // increment the read index
+    // TODO: read first, write second
+    for (int i=0; i<m_iBlockSize && i<iNumFrames; ++i) {
+        lfoValue = m_Lfo.getValue();
+        for (int c=0; c<m_iNumChannels; ++c) {
+            m_ppDelayLine[c]->putPostInc(ppfInputBuffer[c][i]);
+            ppfOutputBuffer[c][i] = m_ppDelayLine[c]->get(lfoValue);
+            m_ppDelayLine[c]->getPostInc(); // increment the read index
+        }
     }
 }
 
 Error_t CVibrato::resetIntern (bool bFreeMemory) {
-    if (bFreeMemory)
-        delete m_delayLine;
-    m_delayLine = nullptr;
+    if (bFreeMemory) {
+        // for (int i=0; i<m_iNumChannels; ++i)
+        //     delete m_ppDelayLine[i];
+        delete[] m_ppDelayLine;
+    }
+    m_ppDelayLine = nullptr;
 
     auto err = m_Lfo.reset(bFreeMemory);
     if (err != kNoError)
@@ -110,6 +127,7 @@ Error_t CVibrato::resetIntern (bool bFreeMemory) {
 
     m_iBlockSize = 0;
     m_iDelayLineSize = 0;
+    m_iNumChannels = 0;
     m_fSampleRate = 0;
     m_bIsLfoEnabled = false;
     m_bIsInitialized = false;

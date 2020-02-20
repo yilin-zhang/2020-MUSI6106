@@ -32,9 +32,10 @@ public:
     /*! initializes a vibrato filter instance
     \param float the maximum delay time
     \param float sample rate
+    \param int number of audio channels
     \return Error_t
     */
-    Error_t init (float fMaxDelayTime, float fSampleRate);
+    Error_t init (float fMaxDelayTime, float fSampleRate, int iNumChannels);
 
     /*! set a paramter for the Vibrato instance
     \param eParam the parameter type
@@ -59,14 +60,15 @@ public:
     \param pfOutputBuffer a pointer to the output buffer
     \return Error_t
     */
-    Error_t process (float *pfInputBuffer, float *pfOutputBuffer);
+    Error_t process (float **ppfInputBuffer, float **ppfOutputBuffer, int iNumFrames);
 
 private:
     Error_t resetIntern (bool bFreeMemory);
 
     bool               m_bIsInitialized;
-    CRingBuffer<float> *m_delayLine;
+    CRingBuffer<float> **m_ppDelayLine;
     int                m_iDelayLineSize;
+    int                m_iNumChannels;
     CLfo               m_Lfo;
     bool               m_bIsLfoEnabled; // only enabling LFO when we have enough samples
     int                m_iBlockSize;

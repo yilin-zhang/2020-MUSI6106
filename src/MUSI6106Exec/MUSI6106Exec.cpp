@@ -33,8 +33,7 @@ int main(int argc, char* argv[])
     CAudioFileIf::FileSpec_t stFileSpec;
 
     CAudioFileIf            *phOutputAudioFile = 0;
-    CVibrato                vib_1;
-    CVibrato                vib_2;
+    CVibrato                vib;
 
     //CCombFilterIf   *pInstance = 0;
     //CCombFilterIf::create(pInstance);
@@ -96,15 +95,10 @@ int main(int argc, char* argv[])
 
     //////////////////////////////////////////////////////////////////////////////
     // initialize vibrato
-    vib_1.init(50.f/44100.f, 44100);
-    vib_1.setParam(CVibrato::kParamDelay, 50.f/44100.f);
-    vib_1.setParam(CVibrato::kParamFreq, 5);
-    vib_1.setParam(CVibrato::kParamBlockSize, kBlockSize);
-
-    vib_2.init(50.f/44100.f, 44100);
-    vib_2.setParam(CVibrato::kParamDelay, 50.f/44100.f);
-    vib_2.setParam(CVibrato::kParamFreq, 5);
-    vib_2.setParam(CVibrato::kParamBlockSize, kBlockSize);
+    vib.init(50.f/44100.f, 44100, stFileSpec.iNumChannels);
+    vib.setParam(CVibrato::kParamDelay, 50.f/44100.f);
+    vib.setParam(CVibrato::kParamFreq, 5);
+    vib.setParam(CVibrato::kParamBlockSize, kBlockSize);
 
     time = clock();
     //////////////////////////////////////////////////////////////////////////////
@@ -116,13 +110,7 @@ int main(int argc, char* argv[])
 
         cout << "\r" << "reading and writing";
 
-        for (int c=0; c<2; ++c) {
-            if (c == 0) {
-                vib_1.process(ppfAudioData[0], ppfOutputData[0]);
-            } else {
-                vib_2.process(ppfAudioData[1], ppfOutputData[1]);
-            }
-        }
+        vib.process(ppfAudioData, ppfOutputData, iNumFrames);
 
         phOutputAudioFile->writeData(ppfOutputData, iNumFrames);
 
@@ -148,12 +136,12 @@ int main(int argc, char* argv[])
     for (int i = 0; i < stFileSpec.iNumChannels; i++)
         delete[] ppfAudioData[i];
     delete[] ppfAudioData;
-    ppfAudioData = 0;
+    ppfAudioData = nullptr;
 
     for (int i = 0; i < stFileSpec.iNumChannels; i++)
         delete[] ppfOutputData[i];
     delete[] ppfOutputData;
-    ppfAudioData = 0;
+    ppfOutputData = nullptr;
 
     return 0;
 
