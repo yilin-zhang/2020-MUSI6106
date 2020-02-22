@@ -19,7 +19,6 @@ void    showClInfo ();
 int main(int argc, char* argv[])
 {
     std::string             sInputFilePath,                 //!< file paths
-                            sOutputTextPath,
                             sOutputFilePath;
 
     static const int        kBlockSize = 1024;
@@ -30,7 +29,6 @@ int main(int argc, char* argv[])
     float                   **ppfOutputData = 0;
 
     CAudioFileIf            *phAudioFile = 0;
-    std::fstream            hOutputText;
     CAudioFileIf::FileSpec_t stFileSpec;
 
     float                   fDelayTime = 0;
@@ -47,13 +45,12 @@ int main(int argc, char* argv[])
     if (argc < 4)
     {
         cerr << "Missing arugment(s)!" << endl;
-        cerr << "arg1: audio file path\narg2: delay time in s\narg3: vibrato frequency in Hz" << endl;
+        cerr << "arg1: audio file path\narg2: delay modulation time in s\narg3: vibrato frequency in Hz" << endl;
         return -1;
     }
     else
     {
         sInputFilePath = argv[1];
-        sOutputTextPath = sInputFilePath + ".txt";
         sOutputFilePath = sInputFilePath.substr(0, sInputFilePath.size()-4) + "_output_cpp.wav";
         fDelayTime = std::stof(argv[2]);
         fVibFreq = std::stof(argv[3]);
@@ -62,7 +59,7 @@ int main(int argc, char* argv[])
             return -1;
         }
         cout << "Output Path: " << sOutputFilePath << endl;
-        cout << "Delay Time: " << fDelayTime << " s" << endl;
+        cout << "Delay Modulation Time: " << fDelayTime << " s" << endl;
         cout << "Vibrato Frequency: " << fVibFreq << " Hz" << endl;
     }
 
@@ -76,15 +73,6 @@ int main(int argc, char* argv[])
         return -1;
     }
     phAudioFile->getFileSpec(stFileSpec);
-
-    //////////////////////////////////////////////////////////////////////////////
-    // open the output text file
-    hOutputText.open(sOutputTextPath.c_str(), std::ios::out);
-    if (!hOutputText.is_open())
-    {
-        cout << "Text file open error!";
-        return -1;
-    }
 
     //////////////////////////////////////////////////////////////////////////////
     // allocate memory
@@ -126,15 +114,6 @@ int main(int argc, char* argv[])
         vib.process(ppfAudioData, ppfOutputData, iNumFrames);
 
         phOutputAudioFile->writeData(ppfOutputData, iNumFrames);
-
-        for (int i = 0; i < iNumFrames; i++)
-        {
-            for (int c = 0; c < stFileSpec.iNumChannels; c++)
-            {
-                hOutputText << ppfAudioData[c][i] << "\t";
-            }
-            hOutputText << endl;
-        }
     }
 
     cout << "\nreading/writing done in: \t" << (clock() - time)*1.F / CLOCKS_PER_SEC << " seconds." << endl;
@@ -142,7 +121,6 @@ int main(int argc, char* argv[])
     //////////////////////////////////////////////////////////////////////////////
     // clean-up
     CAudioFileIf::destroy(phAudioFile);
-    hOutputText.close();
 
     CAudioFileIf::destroy(phOutputAudioFile);
 

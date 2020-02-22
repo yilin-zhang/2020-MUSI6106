@@ -70,7 +70,6 @@ private:
     int                m_iDelayLineSize;
     int                m_iNumChannels;
     CLfo               m_Lfo;
-    bool               m_bIsLfoEnabled; // only enabling LFO when we have enough samples
     int                m_iBlockSize;
     int                m_iMaxVibAmp;
     float              m_fSampleRate;
