@@ -65,6 +65,13 @@ private:
 
         kNumDirections
     };
+    bool m_bIsInitialized;
+    bool m_bIsProcessed;
+    int m_iNumRows;
+    int m_iNumCols;
+    int **m_ppkDelta;
+    float **m_ppfCost;
+    int m_iPathLength;
 };
 
 
